@@ -1,6 +1,6 @@
 # AI Usage Log
 
-Tool: **Claude Code** (desktop app, Claude Opus), used as a pair-programming partner for the whole project, in one continuous session. The full transcript is exported alongside this file. This log summarizes how AI was used in each phase, and where I had to check or correct its output.
+Tool: **Claude Code** (desktop app, Claude Opus), used as a pair-programming partner for the whole project, in one continuous session. The full session is in [AI_SESSION_TRANSCRIPT.pdf](AI_SESSION_TRANSCRIPT.pdf) (63 pages): every prompt and reply, and every tool call with a trimmed result. Model reasoning, browser screenshots and two personal screenshots are omitted, as the PDF's first page explains. This log summarizes how AI was used in each phase, and where I had to check or correct its output.
 
 ## 1. Understanding
 
