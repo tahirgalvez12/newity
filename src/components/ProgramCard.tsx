@@ -2,6 +2,7 @@
 
 import { formatMoneyShort, formatRate, formatTerm, formatYears } from "@/lib/format";
 import { daysSince, STALE_AFTER_DAYS, type MatchResult } from "@/lib/matching";
+import { RateChangeBadge, recentChange } from "./RateChange";
 import type { ProgramView, RecommendState } from "./types";
 import { badge, btn } from "./ui";
 
@@ -19,6 +20,7 @@ export function ProgramCard({ result, now, compared, compareDisabled, onToggleCo
   const p = result.program;
   const age = daysSince(p.lastUpdated, now);
   const stale = age > STALE_AFTER_DAYS;
+  const changed = recentChange(p, now);
   const notes = [
     ...result.warnings.map((text) => ({ kind: "warn" as const, text })),
     ...(p.programType === "504 Loan" ? [{ kind: "info" as const, text: "504 loans fund real estate or major equipment, not working capital" }] : []),
@@ -36,14 +38,17 @@ export function ProgramCard({ result, now, compared, compareDisabled, onToggleCo
           <h3 className="truncate text-base font-semibold tracking-tight text-ink">{p.lenderName}</h3>
           <p className="mt-0.5 text-sm text-ink-2">{p.programType}</p>
         </div>
-        <span title={`Rates last updated ${p.lastUpdated}`} className={stale ? badge.warn : badge.neutral}>
-          {stale ? `⚠ Rates ${age} days old` : `Rates updated ${age === 0 ? "today" : `${age}d ago`}`}
-        </span>
+        <div className="flex flex-wrap gap-1.5">
+          <RateChangeBadge recent={changed} />
+          <span title={`Rates last updated ${p.lastUpdated}`} className={stale ? badge.warn : badge.neutral}>
+            {stale ? `⚠ Rates ${age} days old` : `Rates updated ${age === 0 ? "today" : `${age}d ago`}`}
+          </span>
+        </div>
       </header>
 
       <dl className="tabular mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-4">
-        <Stat label="Rate" value={formatRate(p.interestRateMin, p.interestRateMax)} strong />
-        <Stat label="Max term" value={formatTerm(p.maxTermMonths)} />
+        <Stat label="Rate" value={formatRate(p.interestRateMin, p.interestRateMax)} was={changed?.rate?.from} strong />
+        <Stat label="Max term" value={formatTerm(p.maxTermMonths)} was={changed?.term?.from} />
         <Stat label="Turnaround" value={`${p.turnaroundDays} days`} />
         <Stat label="Loan range" value={`${formatMoneyShort(p.minLoanAmount)}–${formatMoneyShort(p.maxLoanAmount)}`} />
       </dl>
@@ -108,11 +113,16 @@ export function ProgramCard({ result, now, compared, compareDisabled, onToggleCo
   );
 }
 
-function Stat({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
+function Stat({ label, value, strong, was }: { label: string; value: string; strong?: boolean; was?: string }) {
   return (
     <div className="bg-surface-2/60 px-3 py-2.5">
       <dt className="text-[11px] font-medium uppercase tracking-wider text-ink-3">{label}</dt>
       <dd className={strong ? "mt-0.5 text-lg font-semibold text-accent" : "mt-0.5 text-base font-medium text-ink"}>{value}</dd>
+      {was && (
+        <dd className="text-xs text-info">
+          was <s className="text-ink-2">{was}</s>
+        </dd>
+      )}
     </div>
   );
 }

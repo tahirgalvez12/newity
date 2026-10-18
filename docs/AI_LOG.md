@@ -96,6 +96,22 @@ The request was "make it more robust: auth and role-based accounts; reps see one
 
   All three were fixed. Unit tests, e2e tests and the production build were re-run afterwards.
 
+## 9. Flagging rate updates
+
+The sales team asked for "a way to flag when lender rates are updated". The app only showed rate *age*; it couldn't tell a re-import with new rates from one with the same rates.
+
+- **What was built:**
+  - a `rate_history` table (old and new rate range, max term and lender date per change), added with a drizzle-kit migration;
+  - `npm run db:seed` now compares the incoming CSV with the database inside the same transaction as the upsert, records each change, and prints a summary ("4 programs changed rates or terms", then old → new for each);
+  - a blue **↻ Rate changed** badge (or **Term changed**) on cards and in the compare table for 30 days, with the old value struck through under the new one and old → new on hover. It uses the info token plus an icon and words, never color alone;
+  - `data/lenders-update-sample.csv` with 4 edits (a cut, a rise, a term change, and a rate + term change) so the flags can be demoed.
+- **Decisions:**
+  - The diff is a pure function (`src/lib/rate-changes.ts`) with 11 tests: changed, unchanged, new program, removed program, matching on lender *and* program, and the exact edits in the sample file.
+  - A newer `last_updated` with the same numbers is **not** a change. Otherwise every monthly re-confirmation would light up every card and the flag would mean nothing.
+  - Programs missing from a new CSV are reported but left alone, as before. Deleting them could break recommendations that point at them.
+  - Cards use one-decimal rates, so a 0.04-point change would read "11.2% → 11.2%". The display falls back to full precision in that case (tested).
+- **Verification:** ran the seed twice against a separate database: the first import of the sample recorded 4 changes, a second identical import recorded 0. Checked the badges, inline old values and compare table in the browser at desktop and phone width. Unit tests, e2e tests, `tsc`, ESLint and `next build` were re-run.
+
 ## What I'd keep doing / change
 
 - **Keep:** making the AI ask questions and write a plan before coding; testing the core logic before building UI; driving the real app in a browser instead of trusting "it compiles".

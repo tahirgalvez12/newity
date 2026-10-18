@@ -1,4 +1,4 @@
-# Demo outline (≤10 min, for the sales team)
+# Demo outline (≤11 min, for the sales team)
 
 Before recording, run `npm run db:seed-demo` and open http://localhost:3000. Sign in as `alex@newity.test` (rep); you'll switch to `manager@newity.test` later. The password is `DEMO_PASSWORD` in `.env`.
 
@@ -17,18 +17,24 @@ Before recording, run `npm run db:seed-demo` and open http://localhost:3000. Sig
    - Sign out and sign in as the manager. You land on the dashboard: top programs, by program type, by rep, and latest activity.
    - **Team page:** add a new rep (a temporary password is generated), change a role, reset a password, deactivate someone. They're signed out everywhere, but their history stays.
    - Point out that reps can't get here. If a rep opens `/manager`, they're sent back to the matcher with a note.
-4. **Scope decisions (1.5 min).**
+4. **Rate updates (1 min).** "You asked for a way to flag when lender rates are updated."
+   - Before recording, have the matcher open with `150k` → Restaurant → `2` years → Good.
+   - In a terminal: `npm run db:seed data/lenders-update-sample.csv`. It prints "4 programs changed rates or terms" and lists each one, old → new.
+   - Reload the matcher. Summit Lending Group's 7(a) Standard now shows **↻ Rate changed**, with "was 9.8–11.7%" under the new 9.3–11.2%, and its amber age badge is gone. Hover the badge for the details.
+   - Compare Summit and Gateway side by side: the flag and the old values are there too. Flags last 30 days after the import, and every change is kept in a `rate_history` table.
+   - To rehearse again from the original rates, run `npm run db:reset`. Re-importing `data/lenders.csv` would itself be a rate change, and get flagged.
+5. **Scope decisions (1.5 min).**
    - Built: speed on the call first.
    - Cut: SSO/MFA, CSV upload screen, revenue matching, parsing special requirements (see the README table).
    - Every card is amber because the sample rates really are 8 months old. The flag is working as intended.
-5. **Testing (1.5 min).**
-   - 72 unit tests on the rules that would lose deals if wrong, plus 24 security tests that try to break the role boundaries over real HTTP.
+6. **Testing (1.5 min).**
+   - 83 unit tests on the rules that would lose deals if wrong, plus 24 security tests that try to break the role boundaries over real HTTP.
    - The four QA personas.
    - Before shipping: a 30-minute session with 2 reps on real calls, checking the credit bands with sales leadership, and Playwright tests for the click-through flows.
-6. **What's next (1 min).**
-   - **V2 = rate update pipeline:** upload a CSV in the app, show what changed, and flag "rate changed since last week" on cards. Rates change monthly, and quoting a stale rate costs trust.
+7. **What's next (1 min).**
+   - **V2 = rate update pipeline:** change detection and card flags are already in (step 4). Next is uploading the CSV in the app with a preview of the changes before they go live, so no one needs a terminal.
    - Then: a loan purpose input (so 504 stops showing for working capital), and SSO with your company identity provider.
-7. **Honest self-assessment (1 min).**
+8. **Honest self-assessment (1 min).**
    - **Good:** fast, the rules are tested, near-misses help on calls, and the data model can grow.
    - **Rough:**
      - the credit bands are my assumption;

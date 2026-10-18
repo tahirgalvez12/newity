@@ -45,6 +45,11 @@ Other demo accounts use the same password: reps `jordan`, `sam`, `taylor`, `case
 3. Tick **Compare** on 2–3 cards → **Compare side by side**. Try **Copy summary** and **Copy share link**.
 4. Click **Recommend** on a card, then open **My recommendations** in the top nav.
 5. Visit http://localhost:3000/manager. A rep is sent back to the matcher.
+6. **See rate-change flags.** In a terminal, import the newer sample CSV (4 programs have new rates or terms):
+   ```bash
+   npm run db:seed data/lenders-update-sample.csv
+   ```
+   It prints what changed. Reload the matcher: Summit Lending Group, Heritage Credit Union, Gateway Commercial Finance and First National Bank (7(a) Small Loan) now show a blue **↻ Rate changed** (or **Term changed**) badge, with the old value struck through under the new one. Hover the badge for old → new. The flags also appear in **Compare side by side**, and stay for 30 days.
 
 **As the manager** (`manager@newity.test`):
 1. You land on the **Dashboard**: top programs, program types and reps, with 7 / 30 / all-time filters.
@@ -68,7 +73,7 @@ Other demo accounts use the same password: reps `jordan`, `sam`, `taylor`, `case
 | `npm run test:e2e` | Security tests against the **running** app (start `npm run dev` first): every role boundary, over real HTTP |
 | `npm run db:seed-users` | Create the demo accounts (skips ones that exist) |
 | `npm run db:seed-demo` | Replace all recommendations with 60 sample ones (setup only does this on an empty database) |
-| `npm run db:seed [file.csv]` | Re-import lender data. Upserts by (lender, program), so rate changes update in place |
+| `npm run db:seed [file.csv]` | Re-import lender data. Upserts by (lender, program), so rate changes update in place. Rate or term changes are recorded in `rate_history` and flagged on cards for 30 days |
 | `npm run db:reset` | Wipe the database volume and set it up again from scratch |
 | `docker compose down` | Stop Postgres (data is kept in a Docker volume) |
 
@@ -89,6 +94,7 @@ The rules live in [`src/lib/matching.ts`](src/lib/matching.ts): a pure function,
 - Blank inputs don't filter, so the list narrows as the rep types.
 - **Shown but not filtered on:** collateral, max debt ratio, SBA guarantee and special requirements. Reps don't have this information on a first call, so the card turns it into "Ask about: …" prompts instead of silently excluding programs.
 - **Rate freshness:** each card shows how old its rates are and turns amber after 30 days. *Every row in the sample data is from Jan–Feb 2026, so today every card is amber. That's correct: the data really is 8+ months old.*
+- **Rate changes:** when `npm run db:seed` imports a CSV, it compares each program's rate range and max term with what's in the database ([`src/lib/rate-changes.ts`](src/lib/rate-changes.ts), pure and tested) and writes a `rate_history` row for each change, with old and new values. Cards and the compare table show **↻ Rate changed** for 30 days after the import, with the old value inline. A newer `last_updated` with the same numbers isn't flagged: the lender re-confirmed, nothing changed for the borrower.
 
 ## Accounts, roles and security
 
@@ -137,6 +143,7 @@ A dark theme built from a small set of semantic color tokens in [`globals.css`](
 - borrower summary and share link
 - Recommend → Manager view
 - rate-age flags
+- rate-change flags on re-import (with history)
 - CSV import with validation
 - tests
 
@@ -145,7 +152,7 @@ A dark theme built from a small set of semantic color tokens in [`globals.css`](
 | Cut | Why |
 |---|---|
 | SSO, MFA, password-reset email | Email + password with manager-run resets covers 10 internal users and runs locally with no external services. See "Known gaps" above |
-| CSV upload screen | Import is a single command today. A UI is V2, together with rate-change history |
+| CSV upload screen | Import is a single command today (and it already records and flags rate changes). An upload screen with a preview of the changes is V2 |
 | Revenue matching | Reps sometimes know revenue, but the lender data has no revenue rules to match against |
 | Parsing "special requirements" into rules | The free text contradicts the structured columns in places (e.g. "6 months in business" on 3-year programs). It's shown to the rep instead of being guessed at |
 | Loan purpose (working capital vs. real estate) | Not in the data. 504 loans rank first on rate, so their cards carry a note that they fund real estate and equipment only |
@@ -153,11 +160,12 @@ A dark theme built from a small set of semantic color tokens in [`globals.css`](
 
 ## Testing
 
-- **Automated unit tests (`npm test`, 72 tests):**
+- **Automated unit tests (`npm test`, 83 tests):**
   - every matching rule at its exact boundaries (amount bounds, years, each credit band: pass, borderline and fail)
   - exact score overriding the tier
   - near-miss vs. excluded, and all three sort orders
   - CSV import: blanks → null, bad numbers, unknown values and inverted ranges are rejected with the line number
+  - rate-change detection on re-import: changed, unchanged (even with a newer date), new and removed programs, and the exact edits in the demo update CSV
   - tampered share URLs
   - the email summary text
   - real-data "persona" tests that run the actual CSV through the matcher
@@ -187,17 +195,19 @@ A dark theme built from a small set of semantic color tokens in [`globals.css`](
 
 ```
 data/lenders.csv            sample data (source of truth for now)
+data/lenders-update-sample.csv  the same data with 4 rate/term changes, to demo rate-change flags
 docker-compose.yml          Postgres 16
 drizzle/                    SQL migrations (generated by drizzle-kit)
-scripts/seed.ts             CSV → lender_programs (validated upsert)
+scripts/seed.ts             CSV → lender_programs (validated upsert), recording rate changes in rate_history
 scripts/seed-demo.ts        fake recommendations for the dashboard
 scripts/seed-users.ts       demo accounts
-src/db/schema.ts            lender_programs, recommendations, Better Auth tables (user/session/account/verification)
+src/db/schema.ts            lender_programs, rate_history, recommendations, Better Auth tables (user/session/account/verification)
 src/proxy.ts                optimistic signed-in check (redirect to /login)
 src/lib/auth/               Better Auth config, roles/permissions, session helpers, route policy
 e2e/auth.e2e.test.ts        role-boundary security tests (live server)
 src/lib/matching.ts         eligibility + ranking (pure, tested)
 src/lib/csv.ts              CSV parsing/validation (pure, tested)
+src/lib/rate-changes.ts     re-import diff: which programs' rates or terms changed (pure, tested)
 src/lib/url-state.ts        shareable URL <-> screen state
 src/components/Matcher.tsx  the main screen
 src/app/login, account      sign in, change password
