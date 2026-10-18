@@ -60,8 +60,31 @@ export const recommendations = pgTable(
   (t) => [index("recommendations_created_at_idx").on(t.createdAt), index("recommendations_user_id_idx").on(t.userId)],
 );
 
+// One row per program whose rate or term changed on a CSV re-import (written by scripts/seed.ts).
+// Old and new values are both stored so the UI can show "11% → 10.5%" without reconstructing history.
+export const rateHistory = pgTable(
+  "rate_history",
+  {
+    id: serial("id").primaryKey(),
+    programId: integer("program_id")
+      .notNull()
+      .references(() => lenderPrograms.id, { onDelete: "cascade" }),
+    changedAt: timestamp("changed_at", { withTimezone: true }).notNull().defaultNow(),
+    oldInterestRateMin: numeric("old_interest_rate_min", { mode: "number" }).notNull(),
+    newInterestRateMin: numeric("new_interest_rate_min", { mode: "number" }).notNull(),
+    oldInterestRateMax: numeric("old_interest_rate_max", { mode: "number" }).notNull(),
+    newInterestRateMax: numeric("new_interest_rate_max", { mode: "number" }).notNull(),
+    oldMaxTermMonths: integer("old_max_term_months").notNull(),
+    newMaxTermMonths: integer("new_max_term_months").notNull(),
+    oldLastUpdated: date("old_last_updated", { mode: "string" }).notNull(),
+    newLastUpdated: date("new_last_updated", { mode: "string" }).notNull(),
+  },
+  (t) => [index("rate_history_program_changed_idx").on(t.programId, t.changedAt)],
+);
+
 export type LenderProgramRow = typeof lenderPrograms.$inferSelect;
 export type NewLenderProgramRow = typeof lenderPrograms.$inferInsert;
+export type RateHistoryRow = typeof rateHistory.$inferSelect;
 
 // ---------------------------------------------------------------------------
 // Auth tables, owned by Better Auth (core + admin plugin fields). Property names must

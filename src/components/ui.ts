@@ -29,6 +29,7 @@ export const badge = {
   neutral: "rounded-full bg-surface-2 px-2 py-0.5 text-xs font-medium text-ink-2",
   accent: "rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent",
   warn: "rounded-full bg-warn-soft px-2 py-0.5 text-xs font-medium text-warn",
+  info: "rounded-full bg-info-soft px-2 py-0.5 text-xs font-medium text-info",
   violet: "rounded-full bg-violet-soft px-2 py-0.5 text-xs font-medium text-violet",
 };
 
