@@ -1,13 +1,13 @@
 import "dotenv/config";
 import { db, pool } from "../src/db";
-import { lenderPrograms, recommendations } from "../src/db/schema";
+import { eq } from "drizzle-orm";
+import { lenderPrograms, recommendations, user } from "../src/db/schema";
 import { matchPrograms, type Borrower, type CreditTier } from "../src/lib/matching";
 
 // Usage: npm run db:seed-demo
-// Replaces ALL recommendations with ~60 realistic fake ones over the last 30 days, so the
-// manager view has something to show in a demo. Never run this against real data.
-
-const REPS = ["Alex Rivera", "Jordan Lee", "Sam Patel", "Taylor Brooks", "Morgan Chen", "Casey Nguyen", "Riley Adams", "Jamie Ortiz"];
+// Replaces ALL recommendations with ~60 realistic fake ones over the last 30 days, spread
+// across the active rep accounts, so the manager dashboard has something to show in a demo.
+// Never run this against real data.
 const TYPES = ["Restaurant/Food Service", "Construction", "Retail", "Manufacturing", "Professional Services", "Healthcare", "Other"];
 const TIERS: CreditTier[] = ["Excellent", "Good", "Good", "Fair"];
 const AMOUNTS = [40_000, 75_000, 120_000, 150_000, 250_000, 350_000, 500_000, 900_000, 1_500_000, 2_500_000];
@@ -20,6 +20,8 @@ const pick = <T>(xs: T[]) => xs[Math.floor(rand() * xs.length)];
 async function main() {
   const programs = await db.select().from(lenderPrograms);
   if (!programs.length) throw new Error("No lender programs. Run `npm run db:seed` first.");
+  const reps = (await db.select({ id: user.id }).from(user).where(eq(user.role, "rep"))).map((r) => r.id);
+  if (!reps.length) throw new Error("No rep accounts. Run `npm run db:seed-users` first.");
 
   const rows: (typeof recommendations.$inferInsert)[] = [];
   while (rows.length < 60) {
@@ -37,7 +39,7 @@ async function main() {
     const daysAgo = rand() * 30;
     rows.push({
       programId: choice.id,
-      repName: pick(REPS),
+      userId: pick(reps),
       borrowerSnapshot: borrower,
       createdAt: new Date(Date.now() - daysAgo * 86_400_000),
     });

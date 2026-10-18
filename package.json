@@ -7,16 +7,19 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "setup": "node scripts/ensure-env.mjs && docker compose up -d --wait && npm run db:migrate && npm run db:seed",
+    "setup": "node scripts/ensure-env.mjs && docker compose up -d --wait && npm run db:migrate && npm run db:seed && npm run db:seed-users",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx scripts/seed.ts",
     "db:reset": "docker compose down -v && npm run setup",
     "test": "vitest run",
     "test:watch": "vitest",
-    "db:seed-demo": "tsx scripts/seed-demo.ts"
+    "db:seed-demo": "tsx scripts/seed-demo.ts",
+    "db:seed-users": "tsx scripts/seed-users.ts",
+    "test:e2e": "vitest run --config vitest.e2e.config.ts"
   },
   "dependencies": {
+    "better-auth": "1.7.10",
     "drizzle-orm": "^0.45.4",
     "next": "16.4.2",
     "papaparse": "^5.7.0",

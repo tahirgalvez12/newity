@@ -47,6 +47,35 @@ Also tested: invalid requests to the API (400/404 responses), tampered share URL
 
 - Claude drafted the README (setup in 3 commands, matching rules, scope cuts with reasons, test approach), this log, and the [demo outline](DEMO.md). I edited them for tone and accuracy.
 
+## 6. Iteration 2: accounts and roles
+
+The request was "make it more robust: auth and role-based accounts; reps see one view, managers another".
+
+- **Scoping:** Claude asked 4 questions before writing code: sign-in method, library, how accounts get created, and what each role sees. I chose:
+  - email + password;
+  - Better Auth;
+  - managers add reps in the app;
+  - reps get the matcher plus their own history.
+- **Research:** a sub-agent read the current Better Auth docs while Claude read the installed package's source and type definitions. This mattered: the docs disagreed with each other on the Drizzle adapter import. The installed code was treated as the source of truth.
+- **Dependency problem, debugged instead of forced:**
+  - Installing Better Auth hit an npm peer-dependency conflict, and then an npm crash.
+  - Claude bisected it with throwaway lockfile-only installs and found that Vitest 4/5 trigger an npm 10 bug.
+  - The fix was to keep Vitest 3 and regenerate the lockfile. It did *not* use `--force` or `--legacy-peer-deps`, which would have shipped a broken `npm install` to reviewers.
+- **Security issues Claude found in the library and fixed:**
+
+| Issue | Fix |
+|---|---|
+| Better Auth's admin plugin lets an admin **demote themselves** (only self-*ban* is blocked), which could leave the team with no manager | Server hook blocks changing your own role |
+| The plugin accepts **role arrays** (`["rep","manager"]`), giving combined permissions our pages don't understand | Hook only allows exactly `rep` or `manager` |
+| Manager page headings sat outside the role check, so they'd be **prerendered into the static shell** sent to a rep | Moved all manager content inside the guarded component |
+| Login `?next=` could be an **open redirect** | `safeNextPath` accepts same-site paths only (unit tested) |
+| The Recommend API took the rep name from the request body | Now always the session user; e2e test proves a spoofed `userId` is ignored |
+
+- **Testing:**
+  - A 24-test HTTP security suite runs against the live app as each role. It passed against dev and production builds.
+  - To prove the tests aren't hollow, Claude disabled two guards on purpose. The right tests failed, and one even showed the real damage: the manager really got demoted. The guards and data were restored and re-run green.
+- **A false alarm, investigated rather than "fixed":** in browser QA the login form didn't respond. Claude traced it to the hidden browser pane pausing animation frames, which React uses to reveal streamed content. That's a test-environment artifact, so no app change was needed. The investigation did confirm that the form inputs have no `name` attributes, so a pre-hydration native submit can't leak a password into the URL.
+
 ## What I'd keep doing / change
 
 - **Keep:** making the AI ask questions and write a plan before coding; testing the core logic before building UI; driving the real app in a browser instead of trusting "it compiles".

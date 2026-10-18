@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { formatMoneyFull, formatRate, parseAmount } from "@/lib/format";
 import {
   ALL_BUSINESS_TYPES,
@@ -18,7 +18,6 @@ import { MAX_COMPARE, readMatcherState, writeMatcherState, type MatcherState } f
 import { ComparePanel } from "./ComparePanel";
 import { ProgramCard } from "./ProgramCard";
 import type { ProgramView, RecommendState } from "./types";
-import { useRepName } from "./useRepName";
 
 const TIERS: { tier: CreditTier; hint: string }[] = [
   { tier: "Excellent", hint: "720+" },
@@ -36,6 +35,7 @@ const EMPTY_BORROWER: Borrower = { loanAmount: null, businessType: null, yearsIn
 
 export function Matcher({ programs }: { programs: ProgramView[] }) {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [state, setState] = useState<MatcherState>(() => readMatcherState(new URLSearchParams(searchParams.toString())));
   const { borrower, sort, compareIds } = state;
 
@@ -47,9 +47,6 @@ export function Matcher({ programs }: { programs: ProgramView[] }) {
   const [compareOpen, setCompareOpen] = useState(false);
   const [recommendStates, setRecommendStates] = useState<Record<number, RecommendState>>({});
   const [toast, setToast] = useState<string | null>(null);
-  const [repName, setRepName] = useRepName();
-  const [repNameMissing, setRepNameMissing] = useState(false);
-  const repNameRef = useRef<HTMLInputElement>(null);
   const amountRef = useRef<HTMLInputElement>(null);
   const now = useMemo(() => new Date(), []);
 
@@ -103,18 +100,18 @@ export function Matcher({ programs }: { programs: ProgramView[] }) {
   }
 
   async function recommend(programId: number) {
-    if (!repName.trim()) {
-      setRepNameMissing(true);
-      repNameRef.current?.focus();
-      return;
-    }
     setRecommendStates((s) => ({ ...s, [programId]: "saving" }));
     try {
       const res = await fetch("/api/recommendations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ programId, repName: repName.trim(), borrower }),
+        body: JSON.stringify({ programId, borrower }),
       });
+      if (res.status === 401) {
+        // Session expired mid-call: keep the URL (borrower details) so nothing is lost after sign-in.
+        router.push(`/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+        return;
+      }
       if (!res.ok) throw new Error(await res.text());
       setRecommendStates((s) => ({ ...s, [programId]: "done" }));
     } catch {
@@ -236,22 +233,6 @@ export function Matcher({ programs }: { programs: ProgramView[] }) {
               </Field>
             </div>
           </fieldset>
-
-          <div className="border-t border-slate-100 pt-3">
-            <Field label="Recommending as" htmlFor="rep" error={repNameMissing && !repName.trim() ? "Add your name to log recommendations" : undefined} small>
-              <input
-                id="rep"
-                ref={repNameRef}
-                placeholder="Your name"
-                value={repName}
-                onChange={(e) => {
-                  setRepName(e.target.value);
-                  setRepNameMissing(false);
-                }}
-                className={inputClass(repNameMissing && !repName.trim())}
-              />
-            </Field>
-          </div>
         </form>
         {newestUpdate && (
           <p className="mt-3 px-1 text-xs text-slate-500">

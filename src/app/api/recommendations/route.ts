@@ -1,11 +1,14 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { lenderPrograms, recommendations } from "@/db/schema";
+import { getCurrentUser } from "@/lib/auth/session";
 
-const MAX_NAME = 60;
-
-// POST { programId, repName, borrower } → logs that a rep recommended a program to a borrower.
+// POST { programId, borrower } → logs that the signed-in user recommended a program.
+// Who recommended comes from the session, never from the request body.
 export async function POST(request: Request) {
+  const user = await getCurrentUser();
+  if (!user) return Response.json({ error: "Not signed in" }, { status: 401 });
+
   let body: unknown;
   try {
     body = await request.json();
@@ -13,13 +16,9 @@ export async function POST(request: Request) {
     return Response.json({ error: "Body must be JSON" }, { status: 400 });
   }
 
-  const { programId, repName, borrower } = (body ?? {}) as Record<string, unknown>;
-  const name = typeof repName === "string" ? repName.trim() : "";
+  const { programId, borrower } = (body ?? {}) as Record<string, unknown>;
   if (!Number.isInteger(programId) || (programId as number) <= 0) {
     return Response.json({ error: "programId must be a positive integer" }, { status: 400 });
-  }
-  if (!name || name.length > MAX_NAME) {
-    return Response.json({ error: `repName is required (max ${MAX_NAME} characters)` }, { status: 400 });
   }
   if (typeof borrower !== "object" || borrower === null || Array.isArray(borrower)) {
     return Response.json({ error: "borrower must be an object" }, { status: 400 });
@@ -43,7 +42,7 @@ export async function POST(request: Request) {
 
   const [row] = await db
     .insert(recommendations)
-    .values({ programId: program.id, repName: name, borrowerSnapshot: snapshot })
+    .values({ programId: program.id, userId: user.id, borrowerSnapshot: snapshot })
     .returning({ id: recommendations.id, createdAt: recommendations.createdAt });
 
   return Response.json(row, { status: 201 });
