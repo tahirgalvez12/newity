@@ -23,8 +23,6 @@ export function input(invalid = false) {
   }`;
 }
 
-export const select = `${input()} pr-8`;
-
 export const label = "mb-1.5 block text-sm font-medium text-ink-2";
 
 export const badge = {
