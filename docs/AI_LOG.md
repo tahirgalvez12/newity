@@ -76,6 +76,13 @@ The request was "make it more robust: auth and role-based accounts; reps see one
   - To prove the tests aren't hollow, Claude disabled two guards on purpose. The right tests failed, and one even showed the real damage: the manager really got demoted. The guards and data were restored and re-run green.
 - **A false alarm, investigated rather than "fixed":** in browser QA the login form didn't respond. Claude traced it to the hidden browser pane pausing animation frames, which React uses to reveal streamed content. That's a test-environment artifact, so no app change was needed. The investigation did confirm that the form inputs have no `name` attributes, so a pre-hydration native submit can't leak a password into the URL.
 
+## 7. Making it easy for a tester
+
+- I pointed out that the README didn't make sign-in obvious. Claude rewrote the README as a numbered path from clone to signed in, with the credentials written out. It added "things to try" for each role and a troubleshooting table, and it made `npm run setup` seed demo data on a fresh database.
+- Claude then **followed the README literally in a fresh copy** of the repo, with a new database volume and no `.env`. Setup took about 12 seconds.
+- That walk-through found a real bug the automated tests missed. After signing out, the login form was stuck on "Signing in…", because Next 16 keeps recently visited pages alive (hidden) across client-side navigation. The same mechanism meant the previous user's pages stayed in the DOM after sign-out. Sign-in and sign-out now do a full page load.
+- One-click "Rep / Manager" demo sign-in buttons were added. They're gated by `SHOW_DEMO_LOGINS` *and* disabled in production builds, which was verified against a real `next build` (no button, no password in the HTML).
+
 ## What I'd keep doing / change
 
 - **Keep:** making the AI ask questions and write a plan before coding; testing the core logic before building UI; driving the real app in a browser instead of trusting "it compiles".

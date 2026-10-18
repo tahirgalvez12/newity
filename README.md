@@ -9,32 +9,65 @@ A tool for NEWITY sales reps to use **while the borrower is on the phone**. The 
 
 Everyone signs in. **Reps** get the matcher and their own recommendation history. **Managers** also get a team dashboard (which programs reps recommend most) and a Team page to add reps, change roles, reset passwords and deactivate accounts.
 
-## Run it locally (about 2 minutes)
+## Quick start: from clone to signed in (about 3 minutes)
 
-Requirements: **Node 20+** and **Docker Desktop** (running).
+You need **Node 20+** and **Docker Desktop** (open and running).
 
 ```bash
+git clone https://github.com/tahirgalvez12/newity.git
+cd newity
 npm install
-npm run setup     # creates .env (with a random auth secret), starts Postgres, migrates, loads the CSV, creates demo accounts
-npm run dev       # http://localhost:3000
+npm run setup
+npm run dev
 ```
 
-### Demo accounts
+`npm run setup` does everything else:
+- creates `.env` with a random auth secret;
+- starts Postgres in Docker and runs the migrations;
+- loads the lender CSV;
+- creates the demo accounts below;
+- adds 60 sample recommendations so the manager dashboard isn't empty.
 
-All demo accounts use the password in `DEMO_PASSWORD` (see `.env`; the default is in [.env.example](.env.example)). They are local-only.
+**Then open http://localhost:3000.** You'll land on the sign-in page. Either click **Rep** or **Manager** in the yellow "Local demo" box, or type one of these:
 
-| Sign in as | Role | Sees |
+| Role | Email | Password |
 |---|---|---|
-| `alex@newity.test` (or jordan, sam, taylor, casey, riley, jamie, chris `@newity.test`) | Rep | Matcher, My recommendations |
-| `manager@newity.test` (Morgan Chen) or `dana.manager@newity.test` | Manager | Dashboard, Team, Matcher, My recommendations |
+| **Rep** | `alex@newity.test` | `newity-demo-2026` |
+| **Manager** | `manager@newity.test` | `newity-demo-2026` |
 
-Optional: `npm run db:seed-demo` fills the dashboard with 60 sample recommendations spread across the rep accounts. It **clears** existing recommendations.
+Other demo accounts use the same password: reps `jordan`, `sam`, `taylor`, `casey`, `riley`, `jamie`, `chris` (all `@newity.test`), and a second manager, `dana.manager@newity.test`. To switch roles, use **Sign out** (top right).
+
+### Things to try
+
+**As the rep** (`alex@newity.test`):
+1. Type `150k` → Restaurant/Food Service → `2` years → **Good**. The list narrows as you type.
+2. Click **Fair**: some programs drop out, and others warn "Confirm credit score is …". Open **Almost eligible** at the bottom to see why near-misses don't fit.
+3. Tick **Compare** on 2–3 cards → **Compare side by side**. Try **Copy summary** and **Copy share link**.
+4. Click **Recommend** on a card, then open **My recommendations** in the top nav.
+5. Visit http://localhost:3000/manager. A rep is sent back to the matcher.
+
+**As the manager** (`manager@newity.test`):
+1. You land on the **Dashboard**: top programs, program types and reps, with 7 / 30 / all-time filters.
+2. Open **Team**: add a rep (a temporary password is shown once), change someone's role, reset a password, or **Deactivate** someone. Then try signing in as them.
+3. The **Matcher** works for managers too.
+
+### If something goes wrong
+
+| Problem | Fix |
+|---|---|
+| `npm run setup` fails at `docker compose` | Open Docker Desktop, wait until it says it's running, then run `npm run setup` again |
+| Port 3000 or 5433 already in use | Stop whatever is using it, or run `npm run dev -- -p 3001` (and set `BETTER_AUTH_URL=http://localhost:3001` in `.env`) |
+| "Too many attempts" on sign-in | Login is rate limited (3 tries per 10 s). Wait 10 seconds |
+| Want a clean slate | `npm run db:reset`: wipes the database and runs setup again |
+
+### All commands
 
 | Command | What it does |
 |---|---|
 | `npm test` | Unit tests (Vitest): matching rules, CSV import, URL state, summary text, route policy |
 | `npm run test:e2e` | Security tests against the **running** app (start `npm run dev` first): every role boundary, over real HTTP |
 | `npm run db:seed-users` | Create the demo accounts (skips ones that exist) |
+| `npm run db:seed-demo` | Replace all recommendations with 60 sample ones (setup only does this on an empty database) |
 | `npm run db:seed [file.csv]` | Re-import lender data. Upserts by (lender, program), so rate changes update in place |
 | `npm run db:reset` | Wipe the database volume and set it up again from scratch |
 | `docker compose down` | Stop Postgres (data is kept in a Docker volume) |
@@ -76,6 +109,7 @@ How it's enforced, from the outside in:
 
 Other details:
 - **No public sign-up.** The sign-up endpoint is disabled, and managers create accounts.
+- **Demo sign-in buttons** on the login page appear only when `SHOW_DEMO_LOGINS=true` *and* the app isn't a production build.
 - **Passwords:** hashed with scrypt, 10+ characters. Temporary passwords are generated in the browser with `crypto.getRandomValues`.
 - **Login:** the same error for an unknown email and a wrong password. Attempts are rate limited (3 per 10 s per client).
 - **Sessions:** httpOnly, SameSite=Lax cookies that last 7 days, and cross-origin POSTs are rejected. Deactivating a user deletes all their sessions immediately. Changing your password signs out your other devices.

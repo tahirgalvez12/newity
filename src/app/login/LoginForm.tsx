@@ -1,11 +1,14 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { authClient } from "@/lib/auth/client";
 
-export function LoginForm({ next }: { next: string | null }) {
-  const router = useRouter();
+export interface DemoLogins {
+  password: string;
+  accounts: { label: string; name: string; email: string }[];
+}
+
+export function LoginForm({ next, demo }: { next: string | null; demo: DemoLogins | null }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -13,17 +16,22 @@ export function LoginForm({ next }: { next: string | null }) {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    await signIn(email.trim(), password);
+  }
+
+  async function signIn(email: string, password: string) {
     setPending(true);
     setError(null);
-    const { data, error } = await authClient.signIn.email({ email: email.trim(), password });
+    const { data, error } = await authClient.signIn.email({ email, password });
     if (error || !data) {
       setPending(false);
       setError(messageFor(error));
       return;
     }
     const role = (data.user as { role?: string }).role;
-    router.replace(next ?? (role === "manager" ? "/manager" : "/"));
-    router.refresh(); // re-render server components (header, nav) with the new session
+    // Full page load (see SignOutButton): start the new session with no client state carried over
+    // from before sign-in, e.g. this form's "Signing in…" state when someone later signs out.
+    window.location.replace(next ?? (role === "manager" ? "/manager" : "/"));
   }
 
   return (
@@ -74,6 +82,28 @@ export function LoginForm({ next }: { next: string | null }) {
         {pending ? "Signing in…" : "Sign in"}
       </button>
       <p className="text-xs text-slate-500">Forgot your password? Ask your sales manager to reset it.</p>
+      {demo && (
+        <div className="rounded-lg border border-dashed border-amber-300 bg-amber-50 p-3 text-sm">
+          <p className="font-medium text-amber-950">Local demo: sign in with one click</p>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            {demo.accounts.map((a) => (
+              <button
+                key={a.email}
+                type="button"
+                disabled={pending}
+                onClick={() => signIn(a.email, demo.password)}
+                className="rounded-md border border-amber-300 bg-white px-2 py-1.5 text-left hover:bg-amber-100 disabled:opacity-60"
+              >
+                <span className="block font-medium text-slate-900">{a.label}</span>
+                <span className="block text-xs text-slate-600">{a.name}</span>
+              </button>
+            ))}
+          </div>
+          <p className="mt-2 text-xs text-amber-900">
+            Or type any demo email from the README with password <code className="font-mono">{demo.password}</code>.
+          </p>
+        </div>
+      )}
     </form>
   );
 }

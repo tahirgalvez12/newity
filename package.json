@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "setup": "node scripts/ensure-env.mjs && docker compose up -d --wait && npm run db:migrate && npm run db:seed && npm run db:seed-users",
+    "setup": "node scripts/ensure-env.mjs && docker compose up -d --wait && npm run db:migrate && npm run db:seed && npm run db:seed-users && npm run db:seed-demo -- --if-empty",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx scripts/seed.ts",

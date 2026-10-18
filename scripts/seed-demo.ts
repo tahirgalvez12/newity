@@ -1,10 +1,11 @@
 import "dotenv/config";
 import { db, pool } from "../src/db";
-import { eq } from "drizzle-orm";
+import { count, eq } from "drizzle-orm";
 import { lenderPrograms, recommendations, user } from "../src/db/schema";
 import { matchPrograms, type Borrower, type CreditTier } from "../src/lib/matching";
 
-// Usage: npm run db:seed-demo
+// Usage: npm run db:seed-demo            (replaces all recommendations)
+//        npm run db:seed-demo -- --if-empty (only seeds a fresh database; used by `npm run setup`)
 // Replaces ALL recommendations with ~60 realistic fake ones over the last 30 days, spread
 // across the active rep accounts, so the manager dashboard has something to show in a demo.
 // Never run this against real data.
@@ -18,6 +19,13 @@ const rand = () => ((seed = (seed * 1_103_515_245 + 12_345) % 2 ** 31) / 2 ** 31
 const pick = <T>(xs: T[]) => xs[Math.floor(rand() * xs.length)];
 
 async function main() {
+  if (process.argv.includes("--if-empty")) {
+    const [{ n }] = await db.select({ n: count() }).from(recommendations);
+    if (n > 0) {
+      console.log(`Kept ${n} existing recommendations (demo data not added).`);
+      return;
+    }
+  }
   const programs = await db.select().from(lenderPrograms);
   if (!programs.length) throw new Error("No lender programs. Run `npm run db:seed` first.");
   const reps = (await db.select({ id: user.id }).from(user).where(eq(user.role, "rep"))).map((r) => r.id);
@@ -45,9 +53,9 @@ async function main() {
     });
   }
 
-  await db.delete(recommendations);
+  const { rowCount } = await db.delete(recommendations);
   await db.insert(recommendations).values(rows);
-  console.log(`Inserted ${rows.length} demo recommendations (previous recommendations were cleared).`);
+  console.log(`Inserted ${rows.length} demo recommendations${rowCount ? ` (replaced ${rowCount} existing)` : ""}.`);
 }
 
 main()
