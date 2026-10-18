@@ -229,4 +229,4 @@ src/app/api/recommendations POST endpoint for the Recommend button (session-attr
 
 Stack: Next.js 16 (App Router, Cache Components), React 19, TypeScript, Tailwind 4, Postgres 16, Drizzle ORM, Better Auth, Vitest.
 
-See [PLAN.md](PLAN.md) for the original plan, and [docs/AI_LOG.md](docs/AI_LOG.md) for how AI was used.
+See [docs/VERIFICATION.md](docs/VERIFICATION.md) for how each requirement is verified (and what isn't), [PLAN.md](PLAN.md) for the original plan, and [docs/AI_LOG.md](docs/AI_LOG.md) for how AI was used.

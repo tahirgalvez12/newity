@@ -101,7 +101,7 @@ test.describe("rep on a call", () => {
     await expect(card.getByRole("button", { name: "✓ Recommended" })).toBeDisabled();
 
     const { rows } = await db.query(
-      `SELECT u.email, p.lender_name, r.borrower_snapshot FROM recommendations r
+      `SELECT r.id, u.email, p.lender_name, r.borrower_snapshot FROM recommendations r
        JOIN "user" u ON u.id = r.user_id JOIN lender_programs p ON p.id = r.program_id
        WHERE r.created_at >= $1 ORDER BY r.created_at DESC LIMIT 1`,
       [start],
@@ -113,6 +113,9 @@ test.describe("rep on a call", () => {
     await expect(currentTab(page)).toHaveText("My recommendations");
     await expect(page.locator("li").first()).toContainText(lender);
     await expect(page.locator("li").first()).toContainText("$150k · Retail");
+
+    // Leave the demo data as we found it.
+    await db.query(`DELETE FROM recommendations WHERE id = $1`, [rows[0].id]);
   });
 
   test("manager pages are off limits and never render manager content", async ({ page }) => {

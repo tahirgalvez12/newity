@@ -112,6 +112,18 @@ The sales team asked for "a way to flag when lender rates are updated". The app 
   - Cards use one-decimal rates, so a 0.04-point change would read "11.2% → 11.2%". The display falls back to full precision in that case (tested).
 - **Verification:** ran the seed twice against a separate database: the first import of the sample recorded 4 changes, a second identical import recorded 0. Checked the badges, inline old values and compare table in the browser at desktop and phone width. Unit tests, e2e tests, `tsc`, ESLint and `next build` were re-run.
 
+## 9. "How do you know this works?"
+
+- I asked for proof, not assurances. Claude didn't just re-run the existing tests; it added two new, independent kinds of evidence.
+- **A differential test:** the matching rules re-implemented as SQL from the README (not the code), compared with the TypeScript matcher on 4,000 boundary-weighted random borrowers. Claude injected three bugs to show this test catches them.
+- **Playwright browser tests** for every rep and manager flow. They caught two real phone-layout bugs that visual checks had missed:
+  - the matcher only overflowed once web fonts loaded;
+  - on the Team page, a visually-hidden table header escaped its scroll box.
+
+  Each bug was diagnosed to its root cause, fixed, and confirmed on a production build 3 out of 3 times.
+- **A clean clone of the pushed repo** was set up only via the README and passed every suite. Claude caught its own first attempt reusing the existing database volume (same folder name) and redid it in a new folder.
+- [docs/VERIFICATION.md](VERIFICATION.md) maps each requirement to its evidence and lists what is *not* proven, e.g. the credit bands are a business assumption that tests can't validate.
+
 ## What I'd keep doing / change
 
 - **Keep:** making the AI ask questions and write a plan before coding; testing the core logic before building UI; driving the real app in a browser instead of trusting "it compiles".
