@@ -63,7 +63,7 @@ export function ComparePanel({ programs, now, onClose, onRemove }: Props) {
             ✕ <kbd className="rounded border border-line-strong px-1 text-[10px] text-ink-3">Esc</kbd>
           </button>
         </div>
-        <div className="overflow-x-auto">
+        <div className="relative overflow-x-auto">
           <table className="tabular w-full text-left text-sm">
             <thead>
               <tr className="border-b border-line bg-surface-2/60">

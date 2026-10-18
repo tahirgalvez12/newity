@@ -80,7 +80,7 @@ export function TeamManager({
         <p className="border-b border-line bg-surface-2/50 px-5 py-3 text-sm text-ink-2">
           {counts.rep} active rep{counts.rep === 1 ? "" : "s"} · {counts.manager} manager{counts.manager === 1 ? "" : "s"}
         </p>
-        <div className="overflow-x-auto">
+        <div className="relative overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-line text-[11px] uppercase tracking-wider text-ink-3">
               <tr>
@@ -89,6 +89,8 @@ export function TeamManager({
                 <th className="px-4 py-2.5 font-medium">Status</th>
                 <th className="px-4 py-2.5 text-right font-medium">Recs</th>
                 <th className="px-4 py-2.5 font-medium">
+                  {/* The table scroll box is `relative` so this absolutely-positioned label is clipped by it
+                      instead of widening the whole page on phones. */}
                   <span className="sr-only">Actions</span>
                 </th>
               </tr>

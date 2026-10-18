@@ -134,7 +134,7 @@ export function Matcher({ programs }: { programs: ProgramView[] }) {
   }
 
   return (
-    <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 pb-28 lg:grid-cols-[320px_1fr] lg:gap-8">
+    <div className="mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)] gap-6 px-4 py-6 pb-28 lg:grid-cols-[320px_minmax(0,1fr)] lg:gap-8">
       {/* ---------- Intake ---------- */}
       <aside className="lg:sticky lg:top-20 lg:self-start">
         <form className={`${card} space-y-5 p-5`} onSubmit={(e) => e.preventDefault()}>
@@ -261,7 +261,7 @@ export function Matcher({ programs }: { programs: ProgramView[] }) {
               {filtering ? describeBorrower(borrower) : "Enter borrower details to narrow the list."}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <label className="text-sm text-ink-3" htmlFor="sort">
               Sort
             </label>

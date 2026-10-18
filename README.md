@@ -71,6 +71,7 @@ Other demo accounts use the same password: reps `jordan`, `sam`, `taylor`, `case
 |---|---|
 | `npm test` | Unit tests (Vitest): matching rules, CSV import, URL state, summary text, route policy |
 | `npm run typecheck` | Generate Next.js route types, then run the TypeScript compiler |
+| `npm run test:ui` | Browser tests (Playwright) that click through every rep and manager flow, incl. phone width. Uses your installed Chrome (or run `npx playwright install chromium` and set `PW_CHANNEL=chromium`) |
 | `npm run test:e2e` | Security tests against the **running** app (start `npm run dev` first): every role boundary, over real HTTP |
 | `npm run db:seed-users` | Create the demo accounts (skips ones that exist) |
 | `npm run db:seed-demo` | Replace all recommendations with 60 sample ones (setup only does this on an empty database) |
@@ -171,6 +172,15 @@ A dark theme built from a small set of semantic color tokens in [`globals.css`](
   - the email summary text
   - real-data "persona" tests that run the actual CSV through the matcher
   - the auth route policy, including the open-redirect guard on `?next=`
+- **Matcher vs. an independent implementation** (`npm run test:e2e`): the same rules written a second way, as SQL against the real table, compared with the TypeScript matcher on 4,000 seeded random borrowers weighted toward exact boundary values. Eligible lists and their order, near-misses and credit warnings must match exactly. It caught all three deliberately introduced bugs (off-by-one, missing warning, broken tiebreak).
+- **Browser tests (`npm run test:ui`, 19 tests, Playwright):**
+  - a rep's full call: filtering matches the rules card for card, URL state survives reload, borderline credit, near-misses, compare dialog, copy summary and share link (clipboard is read back), Recommend is stored under the signed-in user and shows in history;
+  - a manager's flows: dashboard numbers match the database, onboarding a rep who then signs in with the generated password, deactivation ends their session and blocks sign-in, no self-demotion;
+  - login: errors, the redirect back to where you were going, demo buttons (and their absence in production builds);
+  - rate-change import flags exactly the changed programs;
+  - every page at phone width, with no sideways scrolling, checked after web fonts load.
+
+  The browser suite found two real phone-layout bugs that visual checks had missed; both are fixed.
 - **Security e2e (`npm run test:e2e`, 24 tests)** against a running app, over real HTTP:
   - signed-out access to every page/API
   - sign-up blocked

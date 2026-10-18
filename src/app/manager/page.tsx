@@ -61,7 +61,7 @@ async function Stats({ searchParams }: { searchParams: PageProps<"/manager">["se
           </div>
 
           <Panel title="Latest recommendations" className="mt-4">
-            <div className="overflow-x-auto">
+            <div className="relative overflow-x-auto">
               <table className="tabular w-full text-left text-sm">
                 <thead className="border-b border-line text-[11px] uppercase tracking-wider text-ink-3">
                   <tr>
