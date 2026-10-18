@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* Light only for V1: reps use this on office monitors during the workday. */
+:root {
+  color-scheme: light;
+}
+
+body {
+  background: #f6f7f9;
+  color: #0f172a;
+}
+
+/* Numbers line up in cards and the compare table. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}

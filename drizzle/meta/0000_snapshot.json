@@ -1,0 +1,257 @@
+{
+  "id": "622f7fe1-4976-4e13-83f4-309834e1c02b",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.lender_programs": {
+      "name": "lender_programs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "lender_name": {
+          "name": "lender_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "program_type": {
+          "name": "program_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "min_loan_amount": {
+          "name": "min_loan_amount",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "max_loan_amount": {
+          "name": "max_loan_amount",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "min_credit_score": {
+          "name": "min_credit_score",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "credit_tier_required": {
+          "name": "credit_tier_required",
+          "type": "credit_tier",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "min_years_in_business": {
+          "name": "min_years_in_business",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "interest_rate_min": {
+          "name": "interest_rate_min",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "interest_rate_max": {
+          "name": "interest_rate_max",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "max_term_months": {
+          "name": "max_term_months",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sba_guarantee_pct": {
+          "name": "sba_guarantee_pct",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "eligible_business_types": {
+          "name": "eligible_business_types",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "requires_collateral": {
+          "name": "requires_collateral",
+          "type": "collateral_requirement",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "max_existing_debt_ratio": {
+          "name": "max_existing_debt_ratio",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "turnaround_days": {
+          "name": "turnaround_days",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "special_requirements": {
+          "name": "special_requirements",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_updated": {
+          "name": "last_updated",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "lender_programs_lender_program_uq": {
+          "name": "lender_programs_lender_program_uq",
+          "columns": [
+            {
+              "expression": "lender_name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "program_type",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.recommendations": {
+      "name": "recommendations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "program_id": {
+          "name": "program_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rep_name": {
+          "name": "rep_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "borrower_snapshot": {
+          "name": "borrower_snapshot",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "recommendations_created_at_idx": {
+          "name": "recommendations_created_at_idx",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "recommendations_program_id_lender_programs_id_fk": {
+          "name": "recommendations_program_id_lender_programs_id_fk",
+          "tableFrom": "recommendations",
+          "tableTo": "lender_programs",
+          "columnsFrom": [
+            "program_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.collateral_requirement": {
+      "name": "collateral_requirement",
+      "schema": "public",
+      "values": [
+        "Yes",
+        "No",
+        "Varies"
+      ]
+    },
+    "public.credit_tier": {
+      "name": "credit_tier",
+      "schema": "public",
+      "values": [
+        "Excellent",
+        "Good",
+        "Fair"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
