@@ -16,7 +16,8 @@
     "test:watch": "vitest",
     "db:seed-demo": "tsx scripts/seed-demo.ts",
     "db:seed-users": "tsx scripts/seed-users.ts",
-    "test:e2e": "vitest run --config vitest.e2e.config.ts"
+    "test:e2e": "vitest run --config vitest.e2e.config.ts",
+    "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
     "better-auth": "1.7.10",

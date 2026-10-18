@@ -70,6 +70,7 @@ Other demo accounts use the same password: reps `jordan`, `sam`, `taylor`, `case
 | Command | What it does |
 |---|---|
 | `npm test` | Unit tests (Vitest): matching rules, CSV import, URL state, summary text, route policy |
+| `npm run typecheck` | Generate Next.js route types, then run the TypeScript compiler |
 | `npm run test:e2e` | Security tests against the **running** app (start `npm run dev` first): every role boundary, over real HTTP |
 | `npm run db:seed-users` | Create the demo accounts (skips ones that exist) |
 | `npm run db:seed-demo` | Replace all recommendations with 60 sample ones (setup only does this on an empty database) |
