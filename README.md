@@ -122,6 +122,13 @@ Other details:
 - **No MFA, and no audit log** of who changed whose role.
 - **SSO** (Google Workspace / Okta) would replace passwords entirely for a real sales team.
 
+## Design
+
+A dark theme built from a small set of semantic color tokens in [`globals.css`](src/app/globals.css): surfaces, text, accent and status. Shared button, input, card and badge styles are in [`components/ui.ts`](src/components/ui.ts), so pages stay consistent.
+- **Readable:** every text color was checked at ≥4.5:1 contrast on every surface it sits on. Warnings and errors always carry an icon or label, not just color.
+- **Clear navigation:** the current page is highlighted in the nav, with an accent underline and `aria-current`. On phones the nav moves to its own row.
+- **Light theme later:** only the tokens need light values; components don't change.
+
 ## Scope decisions
 
 **Built:**

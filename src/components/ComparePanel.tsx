@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { formatMoneyShort, formatRate, formatTerm, formatYears } from "@/lib/format";
 import { daysSince, STALE_AFTER_DAYS } from "@/lib/matching";
 import type { ProgramView } from "./types";
+import { btn } from "./ui";
 
 interface Props {
   programs: ProgramView[];
@@ -41,30 +42,33 @@ export function ComparePanel({ programs, now, onClose, onRemove }: Props) {
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-slate-900/40 p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-black/70 p-4 backdrop-blur-sm" onClick={onClose}>
       <div
         role="dialog"
         aria-modal="true"
         aria-label="Compare programs"
-        className="mt-8 w-full max-w-6xl rounded-xl bg-white shadow-xl"
+        className="mt-8 w-full max-w-6xl overflow-hidden rounded-xl border border-line-strong bg-surface shadow-2xl shadow-black/60"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-          <h2 className="text-lg font-semibold">Side-by-side comparison</h2>
-          <button type="button" onClick={onClose} className="rounded-md px-2 py-1 text-slate-500 hover:bg-slate-100" aria-label="Close">
-            ✕ <span className="text-xs">Esc</span>
+        <div className="flex items-center justify-between border-b border-line px-5 py-4">
+          <div>
+            <h2 className="text-lg font-semibold tracking-tight text-ink">Side-by-side comparison</h2>
+            <p className="text-xs text-ink-3">★ marks the best value in a row</p>
+          </div>
+          <button type="button" onClick={onClose} className={btn.ghost} aria-label="Close">
+            ✕ <kbd className="rounded border border-line-strong px-1 text-[10px] text-ink-3">Esc</kbd>
           </button>
         </div>
         <div className="overflow-x-auto">
           <table className="tabular w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-slate-200">
-                <th className="w-44 px-4 py-3" />
+              <tr className="border-b border-line bg-surface-2/60">
+                <th className="w-44 px-5 py-3" />
                 {programs.map((p) => (
                   <th key={p.id} className="min-w-48 px-4 py-3 align-top">
-                    <div className="font-semibold text-slate-900">{p.lenderName}</div>
-                    <div className="font-normal text-slate-600">{p.programType}</div>
-                    <button type="button" onClick={() => onRemove(p.id)} className="mt-1 text-xs font-normal text-slate-500 underline hover:text-slate-800">
+                    <div className="font-semibold text-ink">{p.lenderName}</div>
+                    <div className="font-normal text-ink-2">{p.programType}</div>
+                    <button type="button" onClick={() => onRemove(p.id)} className="mt-1 text-xs font-normal text-ink-3 underline-offset-2 hover:text-danger hover:underline">
                       Remove
                     </button>
                   </th>
@@ -75,12 +79,12 @@ export function ComparePanel({ programs, now, onClose, onRemove }: Props) {
               {ROWS.map((row) => {
                 const bestValue = row.best && programs.length > 1 ? pickBest(programs, row.best) : null;
                 return (
-                  <tr key={row.label} className="border-b border-slate-100">
-                    <th className="px-4 py-2 font-medium text-slate-600">{row.label}</th>
+                  <tr key={row.label} className="border-b border-line hover:bg-surface-2/40">
+                    <th className="px-5 py-2.5 font-medium text-ink-3">{row.label}</th>
                     {programs.map((p) => {
                       const isBest = bestValue != null && row.best!.key(p) === bestValue;
                       return (
-                        <td key={p.id} className={`px-4 py-2 ${isBest ? "bg-emerald-50 font-semibold text-emerald-900" : "text-slate-800"}`}>
+                        <td key={p.id} className={`px-4 py-2.5 ${isBest ? "bg-accent-soft font-semibold text-accent" : "text-ink"}`}>
                           {row.value(p)}
                           {isBest && <span className="ml-1 text-xs font-normal">★ best</span>}
                         </td>
@@ -90,11 +94,12 @@ export function ComparePanel({ programs, now, onClose, onRemove }: Props) {
                 );
               })}
               <tr>
-                <th className="px-4 py-2 font-medium text-slate-600">Rates updated</th>
+                <th className="px-5 py-2.5 font-medium text-ink-3">Rates updated</th>
                 {programs.map((p) => {
                   const age = daysSince(p.lastUpdated, now);
                   return (
-                    <td key={p.id} className={`px-4 py-2 ${age > STALE_AFTER_DAYS ? "text-amber-800" : "text-slate-800"}`}>
+                    <td key={p.id} className={`px-4 py-2.5 ${age > STALE_AFTER_DAYS ? "text-warn" : "text-ink"}`}>
+                      {age > STALE_AFTER_DAYS && "⚠ "}
                       {p.lastUpdated} ({age} days ago)
                     </td>
                   );

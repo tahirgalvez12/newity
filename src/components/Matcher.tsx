@@ -17,6 +17,7 @@ import { buildBorrowerSummary, describeBorrower } from "@/lib/summary";
 import { MAX_COMPARE, readMatcherState, writeMatcherState, type MatcherState } from "@/lib/url-state";
 import { ComparePanel } from "./ComparePanel";
 import { ProgramCard } from "./ProgramCard";
+import { btn, card, input, label as labelClass } from "./ui";
 import type { ProgramView, RecommendState } from "./types";
 
 const TIERS: { tier: CreditTier; hint: string }[] = [
@@ -133,13 +134,16 @@ export function Matcher({ programs }: { programs: ProgramView[] }) {
   }
 
   return (
-    <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 pb-28 lg:grid-cols-[320px_1fr]">
+    <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 pb-28 lg:grid-cols-[320px_1fr] lg:gap-8">
       {/* ---------- Intake ---------- */}
-      <aside className="lg:sticky lg:top-4 lg:self-start">
-        <form className="space-y-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm" onSubmit={(e) => e.preventDefault()}>
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold">Borrower</h2>
-            <button type="button" onClick={resetAll} className="text-sm text-slate-500 underline hover:text-slate-800">
+      <aside className="lg:sticky lg:top-20 lg:self-start">
+        <form className={`${card} space-y-5 p-5`} onSubmit={(e) => e.preventDefault()}>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="font-semibold tracking-tight text-ink">Borrower</h2>
+              <p className="text-xs text-ink-3">Results update as you type.</p>
+            </div>
+            <button type="button" onClick={resetAll} className={`${btn.secondary} shrink-0 whitespace-nowrap`} title="Clear the form for a new call">
               New borrower
             </button>
           </div>
@@ -157,7 +161,7 @@ export function Matcher({ programs }: { programs: ProgramView[] }) {
                 updateBorrower({ loanAmount: parseAmount(e.target.value) });
               }}
               onBlur={() => borrower.loanAmount != null && setAmountText(formatMoneyFull(borrower.loanAmount))}
-              className={inputClass(amountInvalid)}
+              className={input(amountInvalid)}
             />
           </Field>
 
@@ -166,7 +170,7 @@ export function Matcher({ programs }: { programs: ProgramView[] }) {
               id="type"
               value={borrower.businessType ?? ""}
               onChange={(e) => updateBorrower({ businessType: e.target.value || null })}
-              className={inputClass(false)}
+              className={input()}
             >
               <option value="">Any / not sure</option>
               {businessTypes.map((t) => (
@@ -192,13 +196,13 @@ export function Matcher({ programs }: { programs: ProgramView[] }) {
                 const n = e.target.value === "" ? null : Number(e.target.value);
                 updateBorrower({ yearsInBusiness: n != null && Number.isFinite(n) && n >= 0 ? n : null });
               }}
-              className={inputClass(false)}
+              className={input()}
             />
           </Field>
 
           <fieldset>
-            <legend className="mb-1 text-sm font-medium text-slate-700">Credit</legend>
-            <div className="grid grid-cols-3 gap-1 rounded-lg bg-slate-100 p-1" role="radiogroup" aria-label="Credit tier">
+            <legend className={labelClass}>Credit</legend>
+            <div className="grid grid-cols-3 gap-1 rounded-lg border border-line bg-canvas p-1" role="radiogroup" aria-label="Credit tier">
               {TIERS.map(({ tier, hint }) => {
                 const active = borrower.creditTier === tier;
                 return (
@@ -208,15 +212,17 @@ export function Matcher({ programs }: { programs: ProgramView[] }) {
                     role="radio"
                     aria-checked={active}
                     onClick={() => updateBorrower({ creditTier: active ? null : tier })}
-                    className={`rounded-md px-2 py-1.5 text-sm ${active ? "bg-white font-semibold text-slate-900 shadow" : "text-slate-600 hover:text-slate-900"}`}
+                    className={`rounded-md px-2 py-1.5 text-sm transition-colors ${
+                      active ? "bg-accent-soft font-semibold text-accent ring-1 ring-accent-line" : "text-ink-2 hover:bg-surface-2 hover:text-ink"
+                    }`}
                   >
                     {tier}
-                    <span className="block text-[11px] font-normal text-slate-500">{hint}</span>
+                    <span className={`block text-[11px] font-normal ${active ? "text-accent/80" : "text-ink-3"}`}>{hint}</span>
                   </button>
                 );
               })}
             </div>
-            <div className="mt-2">
+            <div className="mt-3">
               <Field label="Exact score (optional)" htmlFor="score" error={scoreInvalid ? "Enter a score from 300 to 850" : undefined} small>
                 <input
                   id="score"
@@ -228,39 +234,42 @@ export function Matcher({ programs }: { programs: ProgramView[] }) {
                     const n = Number(e.target.value);
                     updateBorrower({ creditScore: Number.isInteger(n) && n >= 300 && n <= 850 ? n : null });
                   }}
-                  className={inputClass(scoreInvalid)}
+                  className={input(scoreInvalid)}
                 />
               </Field>
             </div>
           </fieldset>
         </form>
         {newestUpdate && (
-          <p className="mt-3 px-1 text-xs text-slate-500">
-            Lender data: {programs.length} programs · newest rate update {newestUpdate} ({daysSince(newestUpdate, now)} days ago)
+          <p className="mt-3 flex items-start gap-1.5 px-1 text-xs text-ink-3">
+            <span aria-hidden>ⓘ</span>
+            <span>
+              {programs.length} lender programs · newest rate update {newestUpdate} ({daysSince(newestUpdate, now)} days ago)
+            </span>
           </p>
         )}
       </aside>
 
       {/* ---------- Results ---------- */}
       <section aria-live="polite">
-        <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="text-xl font-semibold">
+            <h2 className="text-2xl font-semibold tracking-tight text-ink">
               {filtering ? `${eligible.length} program${eligible.length === 1 ? "" : "s"} fit` : `All ${programs.length} programs`}
             </h2>
-            <p className="text-sm text-slate-600">
+            <p className="mt-0.5 text-sm text-ink-2">
               {filtering ? describeBorrower(borrower) : "Enter borrower details to narrow the list."}
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <label className="text-sm text-slate-600" htmlFor="sort">
+            <label className="text-sm text-ink-3" htmlFor="sort">
               Sort
             </label>
             <select
               id="sort"
               value={sort}
               onChange={(e) => setState((s) => ({ ...s, sort: e.target.value as SortKey }))}
-              className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm"
+              className="rounded-lg border border-line-strong bg-surface-2 px-2 py-1.5 text-sm text-ink hover:border-ink-3"
             >
               {Object.entries(SORT_LABELS).map(([k, label]) => (
                 <option key={k} value={k}>
@@ -272,7 +281,7 @@ export function Matcher({ programs }: { programs: ProgramView[] }) {
               type="button"
               onClick={copySummary}
               disabled={!compared.length && !eligible.length}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm hover:bg-slate-50 disabled:opacity-50"
+              className={`${btn.secondary} whitespace-nowrap`}
             >
               Copy summary{compared.length ? ` (${compared.length})` : " (top 3)"}
             </button>
@@ -280,14 +289,14 @@ export function Matcher({ programs }: { programs: ProgramView[] }) {
         </div>
 
         {eligible.length === 0 && filtering && (
-          <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-950">
-            <p className="font-semibold">No programs fit this borrower right now.</p>
+          <div role="status" className="mb-4 rounded-xl border border-warn-line bg-warn-soft p-4 text-warn">
+            <p className="font-semibold">⚠ No programs fit this borrower right now.</p>
             {borrower.yearsInBusiness != null && borrower.yearsInBusiness < 1 ? (
-              <p className="mt-1 text-sm">
+              <p className="mt-1 text-sm text-ink-2">
                 Every program in our network requires at least 1 year in business. Note the start date and follow up at the 1-year mark.
               </p>
             ) : (
-              <p className="mt-1 text-sm">Check the near-misses below: often one detail (amount, credit) changes the picture.</p>
+              <p className="mt-1 text-sm text-ink-2">Check the near-misses below: often one detail (amount, credit) changes the picture.</p>
             )}
           </div>
         )}
@@ -308,19 +317,23 @@ export function Matcher({ programs }: { programs: ProgramView[] }) {
         </div>
 
         {filtering && nearMisses.length > 0 && (
-          <details className="mt-6 rounded-xl border border-slate-200 bg-white shadow-sm" open={eligible.length === 0}>
-            <summary className="cursor-pointer px-4 py-3 font-medium">
-              Almost eligible ({nearMisses.length}): one requirement off
+          <details className={`${card} group mt-6`} open={eligible.length === 0}>
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-4 py-3 hover:bg-surface-2 [&::-webkit-details-marker]:hidden">
+              <span className="font-medium text-ink">
+                Almost eligible <span className="text-ink-3">({nearMisses.length})</span>
+                <span className="ml-2 text-sm font-normal text-ink-3">one requirement off</span>
+              </span>
+              <span aria-hidden className="text-ink-3 transition-transform group-open:rotate-180">⌄</span>
             </summary>
-            <ul className="divide-y divide-slate-100 border-t border-slate-100">
+            <ul className="divide-y divide-line border-t border-line">
               {nearMisses.map((r) => (
-                <li key={r.program.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 text-sm">
+                <li key={r.program.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 text-sm">
                   <div>
-                    <span className="font-medium text-slate-900">{r.program.lenderName}</span>{" "}
-                    <span className="text-slate-600">· {r.program.programType}</span>
-                    <span className="tabular ml-2 text-slate-500">{formatRate(r.program.interestRateMin, r.program.interestRateMax)}</span>
+                    <span className="font-medium text-ink">{r.program.lenderName}</span>{" "}
+                    <span className="text-ink-2">· {r.program.programType}</span>
+                    <span className="tabular ml-2 text-ink-3">{formatRate(r.program.interestRateMin, r.program.interestRateMax)}</span>
                   </div>
-                  <span className="text-red-700">✕ {r.failures[0]}</span>
+                  <span className="rounded-md bg-danger-soft px-2 py-0.5 text-danger">✕ {r.failures[0]}</span>
                 </li>
               ))}
             </ul>
@@ -330,22 +343,25 @@ export function Matcher({ programs }: { programs: ProgramView[] }) {
 
       {/* ---------- Compare tray ---------- */}
       {compared.length > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 shadow-[0_-4px_12px_rgba(0,0,0,0.06)] backdrop-blur">
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line-strong bg-surface/90 shadow-[0_-8px_24px_rgba(0,0,0,0.4)] backdrop-blur">
           <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-3">
-            <span className="text-sm font-medium">
-              Comparing {compared.length}/{MAX_COMPARE}:
+            <span className="text-sm font-medium text-ink">
+              Comparing <span className="tabular text-accent">{compared.length}</span>
+              <span className="text-ink-3">/{MAX_COMPARE}</span>
             </span>
             <ul className="flex flex-1 flex-wrap gap-2">
               {compared.map((p) => (
-                <li key={p.id} className="flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-sm text-emerald-900">
-                  {p.lenderName} · {p.programType}
-                  <button type="button" aria-label={`Remove ${p.lenderName}`} onClick={() => toggleCompare(p.id)} className="ml-1 text-emerald-700 hover:text-emerald-950">
+                <li key={p.id} className="flex max-w-full items-center gap-1 rounded-full border border-accent-line bg-accent-soft py-0.5 pr-1 pl-2.5 text-xs text-accent">
+                  <span className="truncate">
+                    {p.lenderName} <span className="text-accent/70">· {p.programType}</span>
+                  </span>
+                  <button type="button" aria-label={`Remove ${p.lenderName}`} onClick={() => toggleCompare(p.id)} className="ml-1 grid h-5 w-5 place-items-center rounded-full text-xs hover:bg-accent/20">
                     ✕
                   </button>
                 </li>
               ))}
             </ul>
-            <button type="button" onClick={() => copy(window.location.href, "Link copied. It opens this exact comparison.")} className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50">
+            <button type="button" onClick={() => copy(window.location.href, "Link copied. It opens this exact comparison.")} className={btn.secondary}>
               Copy share link
             </button>
             <button
@@ -353,7 +369,7 @@ export function Matcher({ programs }: { programs: ProgramView[] }) {
               onClick={() => setCompareOpen(true)}
               disabled={compared.length < 2}
               title={compared.length < 2 ? "Select at least 2 programs" : undefined}
-              className="rounded-lg bg-slate-900 px-4 py-1.5 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-40"
+              className={btn.primary}
             >
               Compare side by side
             </button>
@@ -366,7 +382,7 @@ export function Matcher({ programs }: { programs: ProgramView[] }) {
       )}
 
       {toast && (
-        <div role="status" className="fixed bottom-20 left-1/2 z-50 -translate-x-1/2 rounded-lg bg-slate-900 px-4 py-2 text-sm text-white shadow-lg">
+        <div role="status" className="fixed bottom-20 left-1/2 z-50 -translate-x-1/2 rounded-lg border border-line-strong bg-surface-3 px-4 py-2 text-sm text-ink shadow-xl shadow-black/40">
           {toast}
         </div>
       )}
@@ -414,17 +430,11 @@ function Field({
 }) {
   return (
     <div>
-      <label htmlFor={htmlFor} className={`mb-1 block font-medium text-slate-700 ${small ? "text-xs" : "text-sm"}`}>
+      <label htmlFor={htmlFor} className={small ? "mb-1 block text-xs font-medium text-ink-3" : labelClass}>
         {label}
       </label>
       {children}
-      {error ? <p className="mt-1 text-xs text-red-700">{error}</p> : hint ? <p className="mt-1 text-xs text-slate-500">{hint}</p> : null}
+      {error ? <p className="mt-1 text-xs text-danger">{error}</p> : hint ? <p className="mt-1 text-xs text-ink-3">{hint}</p> : null}
     </div>
   );
-}
-
-function inputClass(invalid: boolean) {
-  return `w-full rounded-lg border bg-white px-3 py-2 text-base outline-none focus:ring-2 ${
-    invalid ? "border-red-400 focus:ring-red-100" : "border-slate-300 focus:border-emerald-500 focus:ring-emerald-100"
-  }`;
 }

@@ -1,21 +1,72 @@
 @import "tailwindcss";
 
+/*
+ * Dark theme. Components use these semantic tokens (bg-surface, text-ink-2, border-line,
+ * bg-accent-soft…) rather than raw palette colors, so the whole look is tuned here.
+ * Text tokens keep ≥4.5:1 contrast on every surface they sit on; status colors (warn, danger,
+ * info) are reserved for state and always ship with an icon or label, never color alone.
+ */
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Surfaces, darkest to lightest */
+  --color-canvas: #0a0d12;
+  --color-surface: #11161d;
+  --color-surface-2: #171e27;
+  --color-surface-3: #1e2732;
+
+  /* Lines */
+  --color-line: #222b36;
+  --color-line-strong: #2f3a47;
+
+  /* Text */
+  --color-ink: #e8edf3;
+  --color-ink-2: #aab4c0;
+  --color-ink-3: #8691a0;
+
+  /* Brand accent (actions, selection, the bars in charts) */
+  --color-accent: #34d399;
+  --color-accent-hover: #6ee7b7;
+  --color-accent-ink: #04140d;
+  --color-accent-soft: rgb(52 211 153 / 0.12);
+  --color-accent-line: rgb(52 211 153 / 0.4);
+
+  /* Status */
+  --color-warn: #fbbf24;
+  --color-warn-soft: rgb(251 191 36 / 0.1);
+  --color-warn-line: rgb(251 191 36 / 0.3);
+  --color-danger: #f87171;
+  --color-danger-soft: rgb(248 113 113 / 0.1);
+  --color-danger-line: rgb(248 113 113 / 0.35);
+  --color-info: #7dd3fc;
+  --color-info-soft: rgb(125 211 252 / 0.08);
+
+  /* Role badge */
+  --color-violet: #c4b5fd;
+  --color-violet-soft: rgb(167 139 250 / 0.14);
 }
 
-/* Light only for V1: reps use this on office monitors during the workday. */
 :root {
-  color-scheme: light;
+  color-scheme: dark; /* native controls (selects, scrollbars, autofill) match */
 }
 
 body {
-  background: #f6f7f9;
-  color: #0f172a;
+  background: var(--color-canvas);
+  color: var(--color-ink);
 }
 
 /* Numbers line up in cards and the compare table. */
 .tabular {
   font-variant-numeric: tabular-nums;
+}
+
+/* Keyboard focus is always visible on dark surfaces. */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: rgb(52 211 153 / 0.3);
 }

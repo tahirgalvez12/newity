@@ -7,13 +7,14 @@ import type { Borrower } from "@/lib/matching";
 import { getUserHistory, parseRange } from "@/lib/stats";
 import { describeBorrower } from "@/lib/summary";
 import { writeMatcherState } from "@/lib/url-state";
+import { btn, card, pageSubtitle, pageTitle } from "@/components/ui";
 
 export default function HistoryPage({ searchParams }: PageProps<"/history">) {
   return (
-    <div className="mx-auto max-w-5xl px-4 py-6">
-      <h1 className="text-2xl font-semibold">My recommendations</h1>
-      <p className="mt-1 text-sm text-slate-600">Programs you recommended. Open one to pick up a follow-up call where you left off.</p>
-      <Suspense fallback={<p className="mt-6 text-slate-500">Loading…</p>}>
+    <div className="mx-auto max-w-5xl px-4 py-8">
+      <h1 className={pageTitle}>My recommendations</h1>
+      <p className={pageSubtitle}>Programs you recommended. Open one to pick up a follow-up call where you left off.</p>
+      <Suspense fallback={<p className="mt-6 text-ink-3">Loading…</p>}>
         <History searchParams={searchParams} />
       </Suspense>
     </div>
@@ -29,37 +30,37 @@ async function History({ searchParams }: { searchParams: PageProps<"/history">["
     <>
       <RangeTabs basePath="/history" range={range} />
       {rows.length === 0 ? (
-        <div className="mt-6 rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-600">
+        <div className="mt-6 rounded-xl border border-dashed border-line-strong p-10 text-center text-ink-2">
           Nothing {range === "all" ? "yet" : `in the ${RANGE_LABELS[range].toLowerCase()}`}. Click <strong>Recommend</strong> on a program in the{" "}
-          <Link href="/" className="text-emerald-700 underline">
+          <Link href="/" className="text-accent underline">
             matcher
           </Link>{" "}
           and it shows up here.
         </div>
       ) : (
-        <section className="mt-6 rounded-xl border border-slate-200 bg-white shadow-sm">
-          <p className="border-b border-slate-100 px-4 py-3 text-sm text-slate-600">
+        <section className={`${card} mt-6 overflow-hidden`}>
+          <p className="border-b border-line bg-surface-2/50 px-5 py-3 text-sm text-ink-2">
             {total} recommendation{total === 1 ? "" : "s"}
             {total > rows.length ? ` · showing latest ${rows.length}` : ""}
           </p>
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-line">
             {rows.map((r) => {
               const borrower = r.borrower as Borrower;
               const href = `/?${writeMatcherState({ borrower, sort: "rate", compareIds: [r.programId] })}`;
               return (
-                <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm">
+                <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 text-sm transition-colors hover:bg-surface-2/40">
                   <div>
-                    <div className="font-medium text-slate-900">
-                      {r.lenderName} <span className="font-normal text-slate-600">· {r.programType}</span>
-                      <span className="tabular ml-2 font-normal text-slate-500">{formatRate(r.interestRateMin, r.interestRateMax)}</span>
+                    <div className="font-medium text-ink">
+                      {r.lenderName} <span className="font-normal text-ink-2">· {r.programType}</span>
+                      <span className="tabular ml-2 font-normal text-accent">{formatRate(r.interestRateMin, r.interestRateMax)}</span>
                     </div>
-                    <div className="text-slate-600">{describeBorrower(borrower) || "No borrower details"}</div>
+                    <div className="text-ink-2">{describeBorrower(borrower) || "No borrower details"}</div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <time className="tabular whitespace-nowrap text-slate-500" dateTime={r.createdAt.toISOString()}>
+                    <time className="tabular whitespace-nowrap text-ink-3" dateTime={r.createdAt.toISOString()}>
                       {r.createdAt.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
                     </time>
-                    <Link href={href} className="rounded-lg border border-slate-300 px-3 py-1 hover:bg-slate-50">
+                    <Link href={href} className={btn.secondary}>
                       Open in matcher
                     </Link>
                   </div>

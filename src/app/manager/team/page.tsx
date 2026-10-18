@@ -4,12 +4,13 @@ import { db } from "@/db";
 import { recommendations, user } from "@/db/schema";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth";
 import { requireManager } from "@/lib/auth/session";
+import { pageSubtitle, pageTitle } from "@/components/ui";
 import { TeamManager, type TeamMember } from "./TeamManager";
 
 export default function TeamPage() {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6">
-      <Suspense fallback={<p className="text-slate-500">Loading…</p>}>
+    <div className="mx-auto max-w-6xl px-4 py-8">
+      <Suspense fallback={<p className="text-ink-3">Loading…</p>}>
         <Team />
       </Suspense>
     </div>
@@ -42,8 +43,8 @@ async function Team() {
 
   return (
     <>
-      <h1 className="text-2xl font-semibold">Team</h1>
-      <p className="mt-1 text-sm text-slate-600">
+      <h1 className={pageTitle}>Team</h1>
+      <p className={pageSubtitle}>
         Add reps, change roles, reset passwords. Deactivating signs someone out everywhere but keeps their history.
       </p>
       <TeamManager members={members} currentUserId={me.id} minPasswordLength={MIN_PASSWORD_LENGTH} />

@@ -19,7 +19,7 @@ function demoLogins(): DemoLogins | null {
 
 export default function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
-    <div className="mx-auto mt-16 max-w-sm px-4">
+    <div className="mx-auto mt-[10vh] max-w-sm px-4">
       <Suspense fallback={null}>
         <RedirectIfSignedIn searchParams={searchParams} />
       </Suspense>

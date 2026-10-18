@@ -1,6 +1,7 @@
 "use client";
 
 import { authClient } from "@/lib/auth/client";
+import { btn } from "./ui";
 
 export function SignOutButton() {
   return (
@@ -13,7 +14,7 @@ export function SignOutButton() {
         // previous user's pages or state may survive in this tab.
         window.location.replace("/login");
       }}
-      className="rounded-md px-2 py-1 text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+      className={btn.ghost}
     >
       Sign out
     </button>

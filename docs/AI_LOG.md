@@ -83,6 +83,19 @@ The request was "make it more robust: auth and role-based accounts; reps see one
 - That walk-through found a real bug the automated tests missed. After signing out, the login form was stuck on "Signing in…", because Next 16 keeps recently visited pages alive (hidden) across client-side navigation. The same mechanism meant the previous user's pages stayed in the DOM after sign-out. Sign-in and sign-out now do a full page load.
 - One-click "Rep / Manager" demo sign-in buttons were added. They're gated by `SHOW_DEMO_LOGINS` *and* disabled in production builds, which was verified against a real `next build` (no button, no password in the HTML).
 
+## 8. Visual revamp (dark mode)
+
+- I asked for a neat dark mode and pointed out that the nav didn't show which page you were on.
+- Claude built a semantic token palette instead of flipping colors class by class. It **computed** WCAG contrast for every text/surface pair rather than eyeballing it; the lowest is 4.72:1.
+- A script did the mechanical conversion to tokens, followed by a hand pass on each screen. Shared button, input and card styles were added.
+- Active nav state uses `usePathname` with exact matching for `/` and `/manager`, so the Team page doesn't also light up Dashboard.
+- Each page was checked visually at desktop and phone width, which caught three issues:
+  - the nav was squeezed into a sideways scroll on phones, so it now gets its own row;
+  - a long lender name in a number-sized stat tile wrapped awkwardly;
+  - the compare tray chips stacked into three rows.
+
+  All three were fixed. Unit tests, e2e tests and the production build were re-run afterwards.
+
 ## What I'd keep doing / change
 
 - **Keep:** making the AI ask questions and write a plan before coding; testing the core logic before building UI; driving the real app in a browser instead of trusting "it compiles".

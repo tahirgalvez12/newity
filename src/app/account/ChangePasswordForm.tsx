@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { authClient } from "@/lib/auth/client";
+import { btn, card, input as inputClass, label } from "@/components/ui";
 
 export function ChangePasswordForm({ minLength }: { minLength: number }) {
   const [current, setCurrent] = useState("");
@@ -27,29 +28,31 @@ export function ChangePasswordForm({ minLength }: { minLength: number }) {
     setStatus({ ok: true, text: "Password changed. Other devices were signed out." });
   }
 
-  const input = "w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100";
   return (
-    <form onSubmit={onSubmit} className="mt-6 space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-      <h2 className="font-semibold">Change password</h2>
+    <form onSubmit={onSubmit} className={`${card} mt-6 space-y-4 p-5`}>
+      <div>
+        <h2 className="font-semibold tracking-tight text-ink">Change password</h2>
+        <p className="text-xs text-ink-3">Signs you out on other devices.</p>
+      </div>
       <label className="block text-sm">
-        <span className="mb-1 block font-medium text-slate-700">Current password</span>
-        <input type="password" autoComplete="current-password" required value={current} onChange={(e) => setCurrent(e.target.value)} className={input} />
+        <span className={label}>Current password</span>
+        <input type="password" autoComplete="current-password" required value={current} onChange={(e) => setCurrent(e.target.value)} className={inputClass()} />
       </label>
       <label className="block text-sm">
-        <span className="mb-1 block font-medium text-slate-700">New password</span>
-        <input type="password" autoComplete="new-password" required minLength={minLength} value={next} onChange={(e) => setNext(e.target.value)} className={input} />
-        <span className="mt-1 block text-xs text-slate-500">At least {minLength} characters.</span>
+        <span className={label}>New password</span>
+        <input type="password" autoComplete="new-password" required minLength={minLength} value={next} onChange={(e) => setNext(e.target.value)} className={inputClass()} />
+        <span className="mt-1 block text-xs text-ink-3">At least {minLength} characters.</span>
       </label>
       <label className="block text-sm">
-        <span className="mb-1 block font-medium text-slate-700">Confirm new password</span>
-        <input type="password" autoComplete="new-password" required value={confirm} onChange={(e) => setConfirm(e.target.value)} className={input} />
+        <span className={label}>Confirm new password</span>
+        <input type="password" autoComplete="new-password" required value={confirm} onChange={(e) => setConfirm(e.target.value)} className={inputClass()} />
       </label>
       {status && (
-        <p role={status.ok ? "status" : "alert"} className={`rounded-md px-3 py-2 text-sm ${status.ok ? "bg-emerald-50 text-emerald-900" : "bg-red-50 text-red-800"}`}>
+        <p role={status.ok ? "status" : "alert"} className={`rounded-md border px-3 py-2 text-sm ${status.ok ? "border-accent-line bg-accent-soft text-accent" : "border-danger-line bg-danger-soft text-danger"}`}>
           {status.text}
         </p>
       )}
-      <button type="submit" disabled={pending} className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-60">
+      <button type="submit" disabled={pending} className={btn.primary}>
         {pending ? "Saving…" : "Change password"}
       </button>
     </form>

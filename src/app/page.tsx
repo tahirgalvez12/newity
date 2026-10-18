@@ -9,7 +9,7 @@ async function MatcherWithData({ searchParams }: { searchParams: PageProps<"/">[
   return (
     <>
       {params.denied === "manager" && (
-        <p role="status" className="mx-auto mt-4 max-w-7xl rounded-lg bg-amber-50 px-4 py-2 text-sm text-amber-900">
+        <p role="status" className="mx-auto mt-4 max-w-7xl rounded-lg bg-warn-soft px-4 py-2 text-sm text-warn">
           That page is for sales managers. Ask your manager if you need access.
         </p>
       )}
@@ -20,7 +20,7 @@ async function MatcherWithData({ searchParams }: { searchParams: PageProps<"/">[
 
 export default function Home({ searchParams }: PageProps<"/">) {
   return (
-    <Suspense fallback={<p className="mx-auto max-w-7xl px-4 py-8 text-slate-500">Loading lender programs…</p>}>
+    <Suspense fallback={<p className="mx-auto max-w-7xl px-4 py-8 text-ink-3">Loading lender programs…</p>}>
       <MatcherWithData searchParams={searchParams} />
     </Suspense>
   );

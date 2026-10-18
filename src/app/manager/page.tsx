@@ -4,13 +4,14 @@ import { requireManager } from "@/lib/auth/session";
 import type { Borrower } from "@/lib/matching";
 import { getRecommendationStats, parseRange } from "@/lib/stats";
 import { describeBorrower } from "@/lib/summary";
+import { pageSubtitle, pageTitle } from "@/components/ui";
 
 export default function ManagerPage({ searchParams }: PageProps<"/manager">) {
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6">
+    <div className="mx-auto max-w-7xl px-4 py-8">
       {/* Everything, including the heading, renders inside the role check so nothing
           manager-only ends up in the prerendered shell a rep could receive. */}
-      <Suspense fallback={<p className="text-slate-500">Loading…</p>}>
+      <Suspense fallback={<p className="text-ink-3">Loading…</p>}>
         <Stats searchParams={searchParams} />
       </Suspense>
     </div>
@@ -24,18 +25,18 @@ async function Stats({ searchParams }: { searchParams: PageProps<"/manager">["se
 
   return (
     <>
-      <h1 className="text-2xl font-semibold">What reps are recommending</h1>
-      <p className="mt-1 text-sm text-slate-600">Counts every time someone clicks Recommend on a program for a borrower.</p>
+      <h1 className={pageTitle}>What reps are recommending</h1>
+      <p className={pageSubtitle}>Counts every time someone clicks Recommend on a program for a borrower.</p>
       <RangeTabs basePath="/manager" range={range} />
 
       {stats.total === 0 ? (
-        <div className="mt-6 rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-600">
+        <div className="mt-6 rounded-xl border border-dashed border-line-strong p-10 text-center text-ink-2">
           No recommendations logged {range === "all" ? "yet" : `in the ${RANGE_LABELS[range].toLowerCase()}`}. They appear here as soon as a rep
           clicks <strong>Recommend</strong> in the matcher.
         </div>
       ) : (
         <>
-          <dl className="tabular mt-6 grid gap-3 sm:grid-cols-3">
+          <dl className="mt-6 grid gap-4 sm:grid-cols-3">
             <Tile label="Recommendations" value={String(stats.total)} />
             <Tile label="Reps recommending" value={String(stats.byRep.length)} />
             <Tile
@@ -45,11 +46,11 @@ async function Stats({ searchParams }: { searchParams: PageProps<"/manager">["se
             />
           </dl>
 
-          <div className="mt-6 grid gap-6 lg:grid-cols-2">
+          <div className="mt-4 grid gap-4 lg:grid-cols-2">
             <Panel title="Top programs">
               <BarList rows={stats.byProgram.map((r) => ({ key: String(r.programId), label: r.lenderName, sub: r.programType, value: r.count }))} />
             </Panel>
-            <div className="space-y-6">
+            <div className="space-y-4">
               <Panel title="By program type">
                 <BarList rows={stats.byProgramType.map((r) => ({ key: r.programType, label: r.programType, value: r.count }))} />
               </Panel>
@@ -59,10 +60,10 @@ async function Stats({ searchParams }: { searchParams: PageProps<"/manager">["se
             </div>
           </div>
 
-          <Panel title="Latest recommendations" className="mt-6">
+          <Panel title="Latest recommendations" className="mt-4">
             <div className="overflow-x-auto">
               <table className="tabular w-full text-left text-sm">
-                <thead className="text-xs uppercase tracking-wide text-slate-500">
+                <thead className="border-b border-line text-[11px] uppercase tracking-wider text-ink-3">
                   <tr>
                     <th className="py-2 pr-4 font-medium">When</th>
                     <th className="py-2 pr-4 font-medium">Rep</th>
@@ -70,17 +71,17 @@ async function Stats({ searchParams }: { searchParams: PageProps<"/manager">["se
                     <th className="py-2 font-medium">Borrower</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-line">
                   {stats.recent.map((r) => (
                     <tr key={r.id}>
-                      <td className="py-2 pr-4 whitespace-nowrap text-slate-600">
+                      <td className="py-2.5 pr-4 whitespace-nowrap text-ink-3">
                         {r.createdAt.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
                       </td>
-                      <td className="py-2 pr-4">{r.repName}</td>
-                      <td className="py-2 pr-4">
-                        {r.lenderName} <span className="text-slate-500">· {r.programType}</span>
+                      <td className="py-2.5 pr-4 text-ink">{r.repName}</td>
+                      <td className="py-2.5 pr-4 text-ink">
+                        {r.lenderName} <span className="text-ink-3">· {r.programType}</span>
                       </td>
-                      <td className="py-2 text-slate-600">{describeBorrower(r.borrower as Borrower) || "—"}</td>
+                      <td className="py-2.5 text-ink-2">{describeBorrower(r.borrower as Borrower) || "—"}</td>
                     </tr>
                   ))}
                 </tbody>
