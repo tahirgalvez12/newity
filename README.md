@@ -9,6 +9,8 @@ A tool for NEWITY sales reps to use **while the borrower is on the phone**. The 
 
 Everyone signs in. **Reps** get the matcher and their own recommendation history. **Managers** also get a team dashboard (which programs reps recommend most) and a Team page to add reps, change roles, reset passwords and deactivate accounts.
 
+**▶ Demo video (8:50):** [docs/demo.mp4](docs/demo.mp4): a walkthrough for the sales team covering a live call, a rate update, the manager view, scope decisions, testing, next steps and a self-assessment.
+
 ## Quick start: from clone to signed in (about 3 minutes)
 
 You need **Node 20+** and **Docker Desktop** (open and running).
